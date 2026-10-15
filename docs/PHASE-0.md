@@ -1,4 +1,4 @@
-# Phase 0 — Infrastructure (v0.2.0)
+# Phase 0 — Infrastructure (v0.3.0)
 
 Goal: Postgres running in Docker (localhost only), and your **existing** nginx serving HTTPS for
 `p2p.testerapp.in` and `rtc.p2p.testerapp.in` with one certificate covering all three hostnames.
@@ -9,8 +9,7 @@ Run every command in **PowerShell as Administrator** on the server.
 |---|---|
 | `C:\scr` | this git repo |
 | `C:\krm_doc\nginx-1.30.3` | your existing nginx (shared with other apps) |
-| `C:\krm_doc\nginx-1.30.3\certs` | SCR certificate (from win-acme) |
-| `C:\krm_doc\nginx-1.30.3\acme` | ACME challenge folder for SCR hostnames |
+| `C:\krm_doc\nginx-1.30.3\certs\p2p.testerapp.in-chain.pem` / `-key.pem` | SCR certificate (issued on another machine, copied in manually) |
 
 ## How SCR plugs into your nginx
 
@@ -74,14 +73,16 @@ docker logs scr-postgres 2>&1 | Select-String "scr: app role"
 Wait for `(healthy)`. DB admin from the server (pgAdmin/DBeaver): `127.0.0.1:5432`, user `postgres`,
 password from `pg_superuser_password.txt`.
 
-## Step 5 — Check the two SCR values match your machine
+## Step 5 — Certificate (manual, no auto-renewal on this server)
 
-Open `C:\scr\infra\nginx\snippets\ssl.conf` and `C:\scr\infra\nginx\scr.conf`:
+`infra\nginx\snippets\ssl.conf` points at:
 
-1. `ssl_certificate` / `ssl_certificate_key` must point at the real files in
-   `C:\krm_doc\nginx-1.30.3\certs` (full chain + private key).
-2. In `scr.conf`, the ACME `root` must be the same folder you gave win-acme for validation,
-   otherwise certificate **renewal** will fail in ~60 days.
+- `C:\krm_doc\nginx-1.30.3\certs\p2p.testerapp.in-chain.pem`
+- `C:\krm_doc\nginx-1.30.3\certs\p2p.testerapp.in-key.pem`
+
+Nothing on this server requests or renews certificates. Before the certificate expires (Let's Encrypt: 90 days),
+issue a new one on the other machine, overwrite these two files, and run `reload-nginx.ps1`.
+`verify-phase0.ps1` fails when fewer than 14 days are left, as a reminder.
 
 ## Step 6 — Add SCR to nginx (the only change to your nginx)
 

@@ -1,6 +1,6 @@
-# SCR nginx reload - v0.2.0 (Phase 0)
+# SCR nginx reload - v0.3.0 (Phase 0)
 # Tests the WHOLE config first; only reloads if the test passes, so other sites keep running.
-# Reload is graceful: no dropped connections. Also usable as the win-acme installation script.
+# Reload is graceful: no dropped connections. Run after changing SCR nginx files or replacing the certificate.
 param(
     [string]$NginxDir = 'C:\krm_doc\nginx-1.30.3'
 )
