@@ -1,4 +1,4 @@
-# SCR Phase 0 verification - v0.1.0
+# SCR Phase 0 verification - v0.2.0
 # Usage:  powershell -ExecutionPolicy Bypass -File C:\scr\infra\scripts\verify-phase0.ps1
 $ErrorActionPreference = 'Continue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -51,8 +51,9 @@ Test-Step 'Postgres bound to 127.0.0.1 only' {
 
 Write-Host "--- nginx / TLS ---"
 Test-Step 'nginx process running' { Get-Process nginx -ErrorAction Stop }
-Test-Step 'nginx service set to Automatic' {
-    (Get-Service nginx -ErrorAction Stop).StartType -eq 'Automatic'
+Test-Step 'nginx config test passes' {
+    Push-Location 'C:\krm_doc\nginx-1.30.3'
+    try { & .\nginx.exe -t 2>$null; $LASTEXITCODE -eq 0 } finally { Pop-Location }
 }
 foreach ($h in @($domain, "rtc.$domain")) {
     Test-Step "https://$h/healthz returns 200" {
