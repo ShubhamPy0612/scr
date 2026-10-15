@@ -1,0 +1,50 @@
+# SCR infrastructure - v0.1.0 (Phase 0)
+name: scr
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: scr-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-scr}
+      POSTGRES_PASSWORD_FILE: /run/secrets/pg_superuser_password
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    secrets:
+      - pg_superuser_password
+      - pg_app_password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      # localhost only: reachable from the server itself (pgAdmin/DBeaver), never from the internet
+      - "127.0.0.1:5432:5432"
+    networks:
+      - backend
+    shm_size: 256mb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  backend:
+    name: scr-backend
+
+volumes:
+  pgdata:
+    name: scr-pgdata
+
+secrets:
+  pg_superuser_password:
+    file: ./secrets/pg_superuser_password.txt
+  pg_app_password:
+    file: ./secrets/pg_app_password.txt

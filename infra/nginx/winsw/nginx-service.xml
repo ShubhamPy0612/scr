@@ -1,0 +1,17 @@
+<!-- SCR nginx Windows service (WinSW v2.12.0) - v0.1.0 (Phase 0)
+     Copy next to WinSW-x64.exe renamed to C:\nginx\nginx-service.exe -->
+<service>
+  <id>nginx</id>
+  <name>nginx (SCR)</name>
+  <description>nginx reverse proxy for SCR</description>
+  <executable>C:\nginx\nginx.exe</executable>
+  <workingdirectory>C:\nginx</workingdirectory>
+  <stopexecutable>C:\nginx\nginx.exe</stopexecutable>
+  <stoparguments>-s quit</stoparguments>
+  <startmode>Automatic</startmode>
+  <onfailure action="restart" delay="10 sec"/>
+  <log mode="roll-by-size">
+    <sizeThreshold>10240</sizeThreshold>
+    <keepFiles>5</keepFiles>
+  </log>
+</service>
